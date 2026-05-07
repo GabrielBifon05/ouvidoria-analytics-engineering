@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-05-07T04:31:31.426379+00:00",
+  "total_rows": 8203,
+  "columns": [
+    "enhanced_prompt",
+    "enhanced_completion",
+    "assunto",
+    "completion",
+    "nome_orgao",
+    "prompt",
+    "tipo_manifestacao",
+    "_ingested_at",
+    "_source_file",
+    "prompt_safety_issues_clean",
+    "response_safety_issues_clean",
+    "_transformed_at"
+  ],
+  "null_counts": {
+    "enhanced_prompt": 0,
+    "enhanced_completion": 0,
+    "assunto": 0,
+    "completion": 0,
+    "nome_orgao": 0,
+    "prompt": 0,
+    "tipo_manifestacao": 0,
+    "_ingested_at": 0,
+    "_source_file": 0,
+    "prompt_safety_issues_clean": 0,
+    "response_safety_issues_clean": 0,
+    "_transformed_at": 0
+  },
+  "tipo_manifestacao_dist": {
+    "Sugestão": 2256,
+    "Denúncia": 1796,
+    "Solicitação": 1762,
+    "Reclamação": 1428,
+    "Elogio": 961
+  },
+  "nome_orgao_top10": {
+    "Instituto Nacional do Seguro Social": 915,
+    "Ministério da Economia": 665,
+    "Ministério da Saúde": 426,
+    "Ministério da Cidadania": 333,
+    "Ministério da Fazenda": 206,
+    "Agência Nacional de Aviação Civil": 204,
+    "Ministério da Educação": 188,
+    "Polícia Federal": 166,
+    "Agência Nacional de Vigilância Sanitária": 164,
+    "Controladoria-Geral da União": 140
+  }
+}
