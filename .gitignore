@@ -2,4 +2,6 @@ echo "data/
 *.csv
 env/
 __pycache__/
-*.pyc" > .gitignore
+*.pyc" > .gitignoreinfra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
