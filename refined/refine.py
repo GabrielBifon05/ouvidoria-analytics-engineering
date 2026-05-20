@@ -101,9 +101,9 @@ dim_tempo = df.select(
 
 # Extrai partes da data
 dim_tempo = dim_tempo \
-    .withColumn("ano",       F.year("ingested_at")) \
-    .withColumn("mes",       F.month("ingested_at")) \
-    .withColumn("dia",       F.dayofmonth("ingested_at")) \
+    .withColumn("ano", F.year("ingested_at")) \
+    .withColumn("mes", F.month("ingested_at")) \
+    .withColumn("dia", F.dayofmonth("ingested_at")) \
     .withColumn("dia_semana", F.dayofweek("ingested_at"))
 
 window_tempo = Window.orderBy("ingested_at")
