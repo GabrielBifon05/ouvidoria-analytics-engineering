@@ -249,3 +249,73 @@ resource "aws_s3_bucket_notification" "raw_trigger" {
 
   depends_on = [aws_lambda_permission.allow_s3]
 }
+
+# -------------------------------------------------------
+# Glue Workflow — Orquestração automática do pipeline
+# -------------------------------------------------------
+resource "aws_glue_workflow" "pipeline" {
+  name = "${var.project_name}-pipeline"
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+# Trigger inicial — dispara o ingest
+resource "aws_glue_trigger" "start_ingest" {
+  name          = "${var.project_name}-start-ingest"
+  type          = "ON_DEMAND"
+  workflow_name = aws_glue_workflow.pipeline.name
+
+  actions {
+    job_name = aws_glue_job.ingest.name
+    arguments = {
+      "--input_path"  = "s3://${aws_s3_bucket.raw.bucket}/brazilian_gov_formal_letters.csv"
+      "--output_path" = "s3://${aws_s3_bucket.raw.bucket}/"
+    }
+  }
+}
+
+# Trigger — quando ingest terminar, dispara transform
+resource "aws_glue_trigger" "start_transform" {
+  name          = "${var.project_name}-start-transform"
+  type          = "CONDITIONAL"
+  workflow_name = aws_glue_workflow.pipeline.name
+
+  predicate {
+    conditions {
+      job_name = aws_glue_job.ingest.name
+      state    = "SUCCEEDED"
+    }
+  }
+
+  actions {
+    job_name = aws_glue_job.transform.name
+    arguments = {
+      "--input_path"  = "s3://${aws_s3_bucket.raw.bucket}/"
+      "--output_path" = "s3://${aws_s3_bucket.trusted.bucket}/"
+    }
+  }
+}
+
+# Trigger — quando transform terminar, dispara refine
+resource "aws_glue_trigger" "start_refine" {
+  name          = "${var.project_name}-start-refine"
+  type          = "CONDITIONAL"
+  workflow_name = aws_glue_workflow.pipeline.name
+
+  predicate {
+    conditions {
+      job_name = aws_glue_job.transform.name
+      state    = "SUCCEEDED"
+    }
+  }
+
+  actions {
+    job_name = aws_glue_job.refine.name
+    arguments = {
+      "--input_path"  = "s3://${aws_s3_bucket.trusted.bucket}/"
+      "--output_path" = "s3://${aws_s3_bucket.refined.bucket}/"
+    }
+  }
+}
