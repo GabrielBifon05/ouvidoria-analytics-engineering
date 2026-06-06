@@ -13,3 +13,27 @@ output "bucket_refined" {
 output "bucket_scripts" {
   value = aws_s3_bucket.scripts.bucket
 }
+
+output "glue_job_ingest" {
+  value = aws_glue_job.ingest.name
+}
+
+output "glue_job_transform" {
+  value = aws_glue_job.transform.name
+}
+
+output "glue_job_refine" {
+  value = aws_glue_job.refine.name
+}
+
+output "glue_catalog_database" {
+  value = aws_glue_catalog_database.ouvidoria.name
+}
+
+output "athena_workgroup" {
+  value = aws_athena_workgroup.ouvidoria.name
+}
+
+output "lambda_trigger" {
+  value = aws_lambda_function.trigger_glue.function_name
+}
