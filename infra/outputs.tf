@@ -37,3 +37,7 @@ output "athena_workgroup" {
 output "lambda_trigger" {
   value = aws_lambda_function.trigger_glue.function_name
 }
+
+output "glue_workflow" {
+  value = aws_glue_workflow.pipeline.name
+}
