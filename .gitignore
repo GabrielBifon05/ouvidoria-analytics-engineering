@@ -1,5 +1,14 @@
-echo "data/
+data/
 *.csv
 env/
 __pycache__/
-*.pyc" > .gitignore
+*.pyc
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+bin/
+lib/
+lib64
+etc/
+share/
+pyvenv.cfg
