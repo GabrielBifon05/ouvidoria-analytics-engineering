@@ -41,3 +41,11 @@ output "lambda_trigger" {
 output "glue_workflow" {
   value = aws_glue_workflow.pipeline.name
 }
+
+output "ec2_public_ip" {
+  value = aws_instance.streamlit.public_ip
+}
+
+output "streamlit_url" {
+  value = "http://${aws_instance.streamlit.public_ip}:8501"
+}

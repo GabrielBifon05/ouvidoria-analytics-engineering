@@ -319,3 +319,139 @@ resource "aws_glue_trigger" "start_refine" {
     }
   }
 }
+
+# -------------------------------------------------------
+# VPC + Subnet + Internet Gateway
+# -------------------------------------------------------
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+
+  tags = {
+    Project = var.project_name
+    Name    = "${var.project_name}-vpc"
+  }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "${var.aws_region}a"
+
+  tags = {
+    Project = var.project_name
+    Name    = "${var.project_name}-subnet-public"
+  }
+}
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Project = var.project_name
+    Name    = "${var.project_name}-igw"
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+# -------------------------------------------------------
+# Security Group — libera SSH e porta do Streamlit
+# -------------------------------------------------------
+resource "aws_security_group" "ec2" {
+  name        = "${var.project_name}-ec2-sg"
+  description = "Streamlit dashboard"
+  vpc_id      = aws_vpc.main.id
+
+  # SSH
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Streamlit
+  ingress {
+    from_port   = 8501
+    to_port     = 8501
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Saída livre
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+# -------------------------------------------------------
+# EC2 — Streamlit Dashboard
+# -------------------------------------------------------
+resource "aws_instance" "streamlit" {
+  ami           = "ami-0c7217cdde317cfec" # Ubuntu 22.04 us-east-1
+  instance_type = "t2.micro"
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.ec2.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+  key_name               = "ouvidoria-key"
+
+  # Script que roda automaticamente ao iniciar a instância
+  user_data = <<-EOF
+    #!/bin/bash
+    apt update -y
+    apt install -y python3 python3-pip git
+
+    pip3 install streamlit plotly pandas pyarrow boto3 fsspec s3fs
+
+    mkdir -p /home/ubuntu/dashboard
+
+    aws s3 cp s3://${aws_s3_bucket.scripts.bucket}/dashboard/app.py /home/ubuntu/dashboard/app.py
+
+    cd /home/ubuntu/dashboard
+    nohup streamlit run app.py \
+      --server.port 8501 \
+      --server.address 0.0.0.0 \
+      > /home/ubuntu/streamlit.log 2>&1 &
+  EOF
+
+  tags = {
+    Project = var.project_name
+    Name    = "${var.project_name}-streamlit"
+  }
+}
+
+# IAM Instance Profile para o EC2 acessar o S3
+resource "aws_iam_instance_profile" "ec2" {
+  name = "${var.project_name}-ec2-profile"
+  role = "LabRole"
+}
+
+
+
+
+

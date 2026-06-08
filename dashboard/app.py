@@ -28,9 +28,9 @@ st.set_page_config(
 # interage com o dashboard
 @st.cache_data
 def load_data():
-    fato      = pd.read_parquet("data/refined/fato_manifestacoes")
-    dim_tipo  = pd.read_parquet("data/refined/dim_tipo")
-    dim_orgao = pd.read_parquet("data/refined/dim_orgao")
+    fato      = pd.read_parquet("s3://ouvidoria-refined-gabrielbifon/fato_manifestacoes/")
+    dim_tipo  = pd.read_parquet("s3://ouvidoria-refined-gabrielbifon/dim_tipo/")
+    dim_orgao = pd.read_parquet("s3://ouvidoria-refined-gabrielbifon/dim_orgao/")
 
     # Join fato com dimensões para ter os nomes legíveis
     df = fato.merge(dim_tipo,  on="sk_tipo",  how="left")
